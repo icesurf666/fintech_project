@@ -1,5 +1,5 @@
 from src.bank_account import BankAccount
-from src.customer import Customer
+from src.client import Client
 from src.enums import Currency
 from src.exceptions import InsufficientFundsError, InvalidOperationError
 
@@ -7,7 +7,7 @@ from src.exceptions import InsufficientFundsError, InvalidOperationError
 class PremiumAccount(BankAccount):
     def __init__(
         self,
-        owner: Customer,
+        owner: Client,
         currency: Currency,
         withdrawal_limit: float,
         overdraft_limit: float,

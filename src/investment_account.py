@@ -2,7 +2,7 @@ from math import isfinite
 from typing import ClassVar
 
 from src.bank_account import BankAccount
-from src.customer import Customer
+from src.client import Client
 from src.enums import Currency
 from src.exceptions import InvalidOperationError
 
@@ -16,7 +16,7 @@ class InvestmentAccount(BankAccount):
 
     def __init__(
         self,
-        owner: Customer,
+        owner: Client,
         currency: Currency,
         portfolio: dict[str, float],
     ):

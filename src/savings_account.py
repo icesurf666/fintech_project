@@ -1,5 +1,5 @@
 from src.bank_account import BankAccount
-from src.customer import Customer
+from src.client import Client
 from src.enums import Currency
 from src.exceptions import InvalidOperationError
 
@@ -7,7 +7,7 @@ from src.exceptions import InvalidOperationError
 class SavingsAccount(BankAccount):
     def __init__(
         self,
-        owner: Customer,
+        owner: Client,
         currency: Currency,
         min_balance: float,
         monthly_rate: float,

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from math import isfinite
 from uuid import uuid4
 
-from src.customer import Customer
+from src.client import Client
 from src.enums import AccountStatus, Currency
 from src.exceptions import InvalidOperationError
 
@@ -10,7 +10,7 @@ from src.exceptions import InvalidOperationError
 class AbstractAccount(ABC):
     def __init__(
         self,
-        owner: Customer,
+        owner: Client,
         currency: Currency,
         account_number: str | None = None,
         status: AccountStatus = AccountStatus.ACTIVE,
@@ -26,9 +26,9 @@ class AbstractAccount(ABC):
         self.owner = owner
 
     @staticmethod
-    def _validate_owner(owner: Customer) -> None:
-        if not isinstance(owner, Customer):
-            raise InvalidOperationError("Invalid customer")
+    def _validate_owner(owner: Client) -> None:
+        if not isinstance(owner, Client):
+            raise InvalidOperationError("Invalid client")
 
     @staticmethod
     def _validate_currency(currency: Currency) -> None:
@@ -41,7 +41,7 @@ class AbstractAccount(ABC):
             raise InvalidOperationError("Invalid account status")
 
     @staticmethod
-    def _validate_amount(amount: int | float) -> None:
+    def _validate_amount(amount: float) -> None:
         if isinstance(amount, bool) or not isinstance(amount, (int, float)):
             raise InvalidOperationError("Amount must be numeric")
 
