@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+
 from src.enums import Gender
+
 
 @dataclass
 class Customer:
@@ -12,8 +14,4 @@ class Customer:
 
     @property
     def full_name(self) -> str:
-        return (
-            f"{self.last_name} "
-            f"{self.first_name} "
-            f"{self.middle_name}"
-        )
+        return f"{self.last_name} {self.first_name} {self.middle_name}"

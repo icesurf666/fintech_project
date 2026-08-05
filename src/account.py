@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from math import isfinite
 from uuid import uuid4
+
 from src.customer import Customer
 from src.enums import AccountStatus, Currency
 from src.exceptions import InvalidOperationError
@@ -56,9 +57,7 @@ class AbstractAccount(ABC):
             return uuid4().hex[:12]
 
         if not isinstance(account_number, str):
-            raise InvalidOperationError(
-                "Account number must be a string"
-            )
+            raise InvalidOperationError("Account number must be a string")
 
         account_number = account_number.strip()
 

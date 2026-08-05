@@ -1,6 +1,11 @@
 from src.account import AbstractAccount
 from src.enums import AccountStatus
-from src.exceptions import AccountClosedError, AccountFrozenError, InsufficientFundsError
+from src.exceptions import (
+    AccountClosedError,
+    AccountFrozenError,
+    InsufficientFundsError,
+)
+
 
 class BankAccount(AbstractAccount):
     def _ensure_active(self) -> None:
@@ -19,7 +24,6 @@ class BankAccount(AbstractAccount):
         self._validate_amount(amount)
         self._balance += amount
 
-    
     def withdraw(self, amount: float) -> None:
         self._ensure_active()
         self._validate_amount(amount)
