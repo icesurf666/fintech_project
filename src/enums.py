@@ -24,3 +24,16 @@ class Gender(Enum):
     MALE = "male"
     FEMALE = "female"
     OTHER = "other"
+
+
+class TransactionType(Enum):
+    TRANSFER = "transfer"
+    DEPOSIT = "deposit"
+    WITHDRAWAL = "withdrawal"
+
+
+class TransactionStatus(Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
