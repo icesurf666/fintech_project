@@ -37,3 +37,15 @@ class TransactionStatus(Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
+
+
+class AuditLevel(Enum):
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+
+
+class RiskLevel(Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"

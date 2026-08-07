@@ -1,8 +1,11 @@
 from datetime import datetime
 
+from src.audit_log import AuditLog
 from src.enums import (
     AccountStatus,
+    AuditLevel,
     Currency,
+    RiskLevel,
     TransactionStatus,
     TransactionType,
 )
@@ -12,6 +15,7 @@ from src.exceptions import (
     InsufficientFundsError,
     InvalidOperationError,
 )
+from src.risk_analyzer import RiskAnalyzer
 from src.transaction import Transaction
 
 EXCHANGE_RATES = {
@@ -31,9 +35,41 @@ class TransactionProcessor:
         self.errors: list[str] = []
         self.external_fee_rate = external_fee_rate
 
+        self.risk_analyzer = RiskAnalyzer()
+        self.audit_log = AuditLog()
+
     def process(self, transaction: Transaction) -> None:
         if transaction.status != TransactionStatus.PENDING:
             raise InvalidOperationError("Only pending transaction can be processed")
+
+        risk_level = self.risk_analyzer.analyze(transaction)
+
+        client_id = None
+
+        if transaction.sender is not None:
+            client_id = transaction.sender.owner.client_id
+
+        if risk_level == RiskLevel.HIGH:
+            transaction.status = TransactionStatus.FAILED
+            transaction.rejection_reason = "Transaction blocked due to high risk"
+            transaction.updated_at = datetime.now().astimezone()
+
+            self.audit_log.add(
+                level=AuditLevel.ERROR,
+                message="High-risk transaction blocked",
+                transaction_id=transaction.transaction_id,
+                client_id=client_id,
+            )
+
+            return
+
+        if risk_level == RiskLevel.MEDIUM:
+            self.audit_log.add(
+                level=AuditLevel.WARNING,
+                message="Medium-risk transaction detected",
+                transaction_id=transaction.transaction_id,
+                client_id=client_id,
+            )
 
         while transaction.attempts < transaction.max_attempts:
             transaction.attempts += 1
@@ -52,10 +88,24 @@ class TransactionProcessor:
                     f"Transaction {transaction.transaction_id}, "
                     f"attempt {transaction.attempts}: {error}"
                 )
+
+                self.audit_log.add(
+                    level=AuditLevel.ERROR,
+                    message=str(error),
+                    transaction_id=transaction.transaction_id,
+                    client_id=client_id,
+                )
             else:
                 transaction.status = TransactionStatus.COMPLETED
                 transaction.rejection_reason = None
                 transaction.updated_at = datetime.now().astimezone()
+
+                self.audit_log.add(
+                    level=AuditLevel.INFO,
+                    message="Transaction completed",
+                    transaction_id=transaction.transaction_id,
+                    client_id=client_id,
+                )
                 return
 
         transaction.status = TransactionStatus.FAILED
