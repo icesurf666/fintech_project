@@ -85,10 +85,11 @@ def run_demo() -> None:
         ),
     ]
 
-    processor = TransactionProcessor()
-    processor.risk_analyzer = RiskAnalyzer(
-        large_amount_limit=100_000,
-        frequent_operations_limit=4,
+    processor = TransactionProcessor(
+        risk_analyzer=RiskAnalyzer(
+            large_amount_limit=100_000,
+            frequent_operations_limit=4,
+        )
     )
 
     print("=== Audit and risk analysis ===")

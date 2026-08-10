@@ -155,10 +155,11 @@ def run_simulation(show_logs: bool = False) -> SimulationResult:
         print(f"CANCELLED: {cancelled_transaction.transaction_id}")
         print("\n=== Transaction processing ===")
 
-    processor = TransactionProcessor()
-    processor.risk_analyzer = RiskAnalyzer(
-        large_amount_limit=100_000,
-        frequent_operations_limit=100,
+    processor = TransactionProcessor(
+        risk_analyzer=RiskAnalyzer(
+            large_amount_limit=100_000,
+            frequent_operations_limit=100,
+        )
     )
 
     tracked_account = rub_accounts[0]

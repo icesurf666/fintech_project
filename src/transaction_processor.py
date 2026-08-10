@@ -31,12 +31,15 @@ class TransactionProcessor:
     def __init__(
         self,
         external_fee_rate: float = 0.01,
+        risk_analyzer: RiskAnalyzer | None = None,
+        audit_log: AuditLog | None = None,
     ) -> None:
         self.errors: list[str] = []
         self.external_fee_rate = external_fee_rate
-
-        self.risk_analyzer = RiskAnalyzer()
-        self.audit_log = AuditLog()
+        self.risk_analyzer = (
+            risk_analyzer if risk_analyzer is not None else RiskAnalyzer()
+        )
+        self.audit_log = audit_log if audit_log is not None else AuditLog()
 
     def process(self, transaction: Transaction) -> None:
         if transaction.status != TransactionStatus.PENDING:

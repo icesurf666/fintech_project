@@ -83,10 +83,11 @@ def create_transactions() -> list[Transaction]:
 def run_demo() -> None:
     transactions = create_transactions()
     queue = TransactionQueue()
-    processor = TransactionProcessor()
-    processor.risk_analyzer = RiskAnalyzer(
-        large_amount_limit=1_000_000,
-        frequent_operations_limit=100,
+    processor = TransactionProcessor(
+        risk_analyzer=RiskAnalyzer(
+            large_amount_limit=1_000_000,
+            frequent_operations_limit=100,
+        )
     )
 
     for transaction in transactions:
