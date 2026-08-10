@@ -7,6 +7,7 @@ from demos.day3 import run_demo as run_day3
 from demos.day4 import run_demo as run_day4
 from demos.day5 import run_demo as run_day5
 from demos.day6 import run_demo as run_day6
+from demos.day7 import run_demo as run_day7
 
 DEMOS: dict[str, Callable[[], None]] = {
     "1": run_day1,
@@ -15,6 +16,7 @@ DEMOS: dict[str, Callable[[], None]] = {
     "4": run_day4,
     "5": run_day5,
     "6": run_day6,
+    "7": run_day7,
 }
 
 
