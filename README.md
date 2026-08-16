@@ -33,6 +33,8 @@ fintech_project/
 │   ├── report_builder.py
 │   ├── transaction.py
 │   └── ...
+├── tests/               # Unit and integration tests
+│   └── test_required_fixes.py
 └── demos/               # Feature demonstrations
     ├── day1.py
     ├── day2.py
@@ -86,6 +88,12 @@ The Day 7 demonstration generates files in `reports/day7`:
 The `reports` directory contains generated files and is excluded from Git.
 
 ## Code Quality
+
+Run the test suite:
+
+```bash
+python3 -m pytest
+```
 
 Run Ruff checks and verify formatting:
 

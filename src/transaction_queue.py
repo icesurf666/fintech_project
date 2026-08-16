@@ -14,6 +14,13 @@ class TransactionQueue:
             raise InvalidOperationError("Only transactions can be added to the queue")
 
         self.transactions.append(transaction)
+        self._sort_by_priority()
+
+    def _sort_by_priority(self) -> None:
+        self.transactions.sort(
+            key=lambda transaction: transaction.priority,
+            reverse=True,
+        )
 
     def cancel(self, transaction_id: str) -> None:
         for transaction in self.transactions:
@@ -37,17 +44,14 @@ class TransactionQueue:
         for transaction in self.transactions:
             if transaction.transaction_id == transaction_id:
                 transaction.priority = priority
-
-                self.transactions.sort(
-                    key=lambda item: item.priority,
-                    reverse=True,
-                )
+                self._sort_by_priority()
                 return
 
         raise InvalidOperationError("Transaction not found")
 
     def get_next(self) -> Transaction | None:
         current_time = datetime.now().astimezone()
+        self._sort_by_priority()
 
         for transaction in self.transactions:
             if transaction.status != TransactionStatus.PENDING:

@@ -11,8 +11,10 @@ class SavingsAccount(BankAccount):
         currency: Currency,
         min_balance: float,
         monthly_rate: float,
-    ):
+    ) -> None:
         super().__init__(owner, currency)
+        self._validate_non_negative_number(min_balance, "Minimum balance")
+        self._validate_non_negative_number(monthly_rate, "Monthly rate")
 
         self.min_balance = min_balance
         self.monthly_rate = monthly_rate

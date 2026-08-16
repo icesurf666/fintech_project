@@ -37,17 +37,26 @@ class Bank:
         self,
         client_id: str,
         currency: Currency,
+        account_type: type[BankAccount] = BankAccount,
+        **account_options: object,
     ) -> BankAccount:
         self._ensure_operation_allowed()
 
         if client_id not in self.clients:
             raise InvalidOperationError("Client not found")
 
+        if not isinstance(account_type, type) or not issubclass(
+            account_type,
+            BankAccount,
+        ):
+            raise InvalidOperationError("Invalid account type")
+
         client = self.clients[client_id]
 
-        account = BankAccount(
+        account = account_type(
             owner=client,
             currency=currency,
+            **account_options,
         )
 
         self.accounts[account.account_number] = account
@@ -126,9 +135,11 @@ class Bank:
 
         return False
 
-    def search_account(self, account_number):
-        account = self.accounts[account_number]
-        return account
+    def search_account(self, account_number: str) -> BankAccount:
+        if account_number not in self.accounts:
+            raise InvalidOperationError("Account not found")
+
+        return self.accounts[account_number]
 
     def search_accounts(
         self,

@@ -38,10 +38,18 @@ def create_transactions() -> list[Transaction]:
 
     transactions = [
         Transaction(
-            TransactionType.TRANSFER, 1000, Currency.RUB, rub_sender, rub_receiver
+            TransactionType.DEPOSIT,
+            1000,
+            Currency.RUB,
+            None,
+            rub_sender,
         ),
         Transaction(
-            TransactionType.TRANSFER, 2000, Currency.RUB, rub_sender, rub_receiver
+            TransactionType.WITHDRAWAL,
+            2000,
+            Currency.RUB,
+            rub_sender,
+            None,
         ),
         Transaction(
             TransactionType.TRANSFER,
@@ -109,6 +117,7 @@ def run_demo() -> None:
         reason = transaction.rejection_reason or "-"
         print(
             f"{transaction.transaction_id}: "
+            f"type={transaction.transaction_type.value}, "
             f"{transaction.status.value}, "
             f"attempts={transaction.attempts}, "
             f"fee={transaction.fee:.2f}, "

@@ -51,6 +51,8 @@ class TransactionProcessor:
 
         if transaction.sender is not None:
             client_id = transaction.sender.owner.client_id
+        elif transaction.receiver is not None:
+            client_id = transaction.receiver.owner.client_id
 
         if risk_level == RiskLevel.HIGH:
             transaction.status = TransactionStatus.FAILED
@@ -78,7 +80,7 @@ class TransactionProcessor:
             transaction.attempts += 1
 
             try:
-                self._execute_transfer(transaction)
+                self._execute_transaction(transaction)
             except (
                 AccountClosedError,
                 AccountFrozenError,
@@ -113,10 +115,17 @@ class TransactionProcessor:
 
         transaction.status = TransactionStatus.FAILED
 
-    def _execute_transfer(self, transaction: Transaction) -> None:
-        if transaction.transaction_type != TransactionType.TRANSFER:
-            raise InvalidOperationError("Only transfers are supported")
+    def _execute_transaction(self, transaction: Transaction) -> None:
+        if transaction.transaction_type == TransactionType.TRANSFER:
+            self._execute_transfer(transaction)
+        elif transaction.transaction_type == TransactionType.DEPOSIT:
+            self._execute_deposit(transaction)
+        elif transaction.transaction_type == TransactionType.WITHDRAWAL:
+            self._execute_withdrawal(transaction)
+        else:
+            raise InvalidOperationError("Unsupported transaction type")
 
+    def _execute_transfer(self, transaction: Transaction) -> None:
         if transaction.sender is None:
             raise InvalidOperationError("Sender is required")
 
@@ -152,3 +161,33 @@ class TransactionProcessor:
 
         sender.withdraw(total_amount)
         receiver.deposit(converted_amount)
+
+    @staticmethod
+    def _execute_deposit(transaction: Transaction) -> None:
+        if transaction.receiver is None:
+            raise InvalidOperationError("Receiver is required for deposit")
+
+        receiver = transaction.receiver
+
+        if transaction.currency != receiver.currency:
+            raise InvalidOperationError(
+                "Transaction currency does not match receiver currency"
+            )
+
+        transaction.fee = 0
+        receiver.deposit(transaction.amount)
+
+    @staticmethod
+    def _execute_withdrawal(transaction: Transaction) -> None:
+        if transaction.sender is None:
+            raise InvalidOperationError("Sender is required for withdrawal")
+
+        sender = transaction.sender
+
+        if transaction.currency != sender.currency:
+            raise InvalidOperationError(
+                "Transaction currency does not match sender currency"
+            )
+
+        transaction.fee = 0
+        sender.withdraw(transaction.amount)

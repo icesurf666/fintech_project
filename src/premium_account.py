@@ -12,8 +12,11 @@ class PremiumAccount(BankAccount):
         withdrawal_limit: float,
         overdraft_limit: float,
         fee: float,
-    ):
+    ) -> None:
         super().__init__(owner, currency)
+        self._validate_non_negative_number(withdrawal_limit, "Withdrawal limit")
+        self._validate_non_negative_number(overdraft_limit, "Overdraft limit")
+        self._validate_non_negative_number(fee, "Fee")
 
         self.withdrawal_limit = withdrawal_limit
         self.overdraft_limit = overdraft_limit

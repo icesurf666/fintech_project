@@ -52,6 +52,17 @@ class AbstractAccount(ABC):
             raise InvalidOperationError("Amount must be greater than zero")
 
     @staticmethod
+    def _validate_non_negative_number(value: float, name: str) -> None:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise InvalidOperationError(f"{name} must be numeric")
+
+        if not isfinite(value):
+            raise InvalidOperationError(f"{name} must be finite")
+
+        if value < 0:
+            raise InvalidOperationError(f"{name} cannot be negative")
+
+    @staticmethod
     def _prepare_account_number(account_number: str | None) -> str:
         if account_number is None:
             return uuid4().hex[:12]
