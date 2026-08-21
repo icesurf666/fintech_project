@@ -105,6 +105,8 @@ class TransactionProcessor:
                 transaction.rejection_reason = None
                 transaction.updated_at = datetime.now().astimezone()
 
+                self.risk_analyzer.register_known_receiver(transaction)
+
                 self.audit_log.add(
                     level=AuditLevel.INFO,
                     message="Transaction completed",

@@ -59,6 +59,9 @@ class Bank:
             **account_options,
         )
 
+        if account.account_number in self.accounts:
+            raise InvalidOperationError("Account number already exists")
+
         self.accounts[account.account_number] = account
         client.account_numbers.append(account.account_number)
 

@@ -77,16 +77,30 @@ class RiskAnalyzer:
         client_id = sender.owner.client_id
         receiver_number = receiver.account_number
 
-        known_accounts = self.known_receivers.setdefault(
-            client_id,
-            set(),
-        )
+        known_accounts = self.known_receivers.get(client_id, set())
 
         if receiver_number not in known_accounts:
-            known_accounts.add(receiver_number)
             return RiskLevel.MEDIUM
 
         return RiskLevel.LOW
+
+    def register_known_receiver(
+        self,
+        transaction: Transaction,
+    ) -> None:
+        if transaction.sender is None or transaction.receiver is None:
+            return
+
+        sender = transaction.sender
+        receiver = transaction.receiver
+
+        if sender.owner.client_id == receiver.owner.client_id:
+            return
+
+        self.known_receivers.setdefault(
+            sender.owner.client_id,
+            set(),
+        ).add(receiver.account_number)
 
     def analyze_night_operation(
         self,

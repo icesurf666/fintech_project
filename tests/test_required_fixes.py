@@ -6,7 +6,7 @@ from src.audit_log import AuditLog
 from src.bank import Bank
 from src.bank_account import BankAccount
 from src.client import Client
-from src.enums import Currency, TransactionStatus, TransactionType
+from src.enums import Currency, Gender, RiskLevel, TransactionStatus, TransactionType
 from src.exceptions import InvalidOperationError
 from src.investment_account import InvestmentAccount
 from src.premium_account import PremiumAccount
@@ -179,3 +179,104 @@ def test_specialized_accounts_reject_negative_parameters(
 ) -> None:
     with pytest.raises(InvalidOperationError):
         account_factory(client)
+
+
+def _make_client(client_id: str) -> Client:
+    return Client(
+        first_name="Other",
+        last_name="Client",
+        middle_name="User",
+        birth_year=2000,
+        passport="0987654321",
+        gender=Gender.OTHER,
+        phone="+70000000001",
+        email=f"{client_id}@example.com",
+        client_id=client_id,
+    )
+
+
+def test_bank_rejects_duplicate_account_number(client: Client) -> None:
+    other = _make_client("other-1")
+    bank = Bank()
+    bank.add_client(client)
+    bank.add_client(other)
+
+    first = bank.open_account(
+        client.client_id,
+        Currency.RUB,
+        account_number="ACC-0001",
+    )
+
+    with pytest.raises(InvalidOperationError):
+        bank.open_account(
+            other.client_id,
+            Currency.RUB,
+            account_number="ACC-0001",
+        )
+
+    assert bank.accounts["ACC-0001"] is first
+    assert other.account_numbers == []
+
+
+def _make_transfer(sender: BankAccount, receiver: BankAccount) -> Transaction:
+    transfer = Transaction(
+        TransactionType.TRANSFER,
+        100,
+        Currency.RUB,
+        sender,
+        receiver,
+    )
+    # Force a daytime hour so the risk analyzer does not block the transfer
+    # as a night operation (which would make the test time-dependent).
+    transfer.created_at = datetime.now().astimezone().replace(hour=12)
+    return transfer
+
+
+def test_failed_transfer_does_not_mark_receiver_known(
+    client: Client,
+    tmp_path,
+) -> None:
+    receiver_owner = _make_client("receiver-1")
+    sender = BankAccount(client, Currency.RUB)
+    receiver = BankAccount(receiver_owner, Currency.RUB)
+
+    risk_analyzer = RiskAnalyzer()
+    processor = TransactionProcessor(
+        risk_analyzer=risk_analyzer,
+        audit_log=AuditLog(str(tmp_path / "audit.log")),
+    )
+
+    transfer = _make_transfer(sender, receiver)
+
+    # A brand-new receiver is flagged as MEDIUM risk.
+    assert risk_analyzer.analyze_new_receiver(transfer) == RiskLevel.MEDIUM
+
+    # Sender has no funds, so the transfer fails.
+    processor.process(transfer)
+    assert transfer.status == TransactionStatus.FAILED
+
+    # The failed transfer must not mark the receiver as known.
+    assert risk_analyzer.analyze_new_receiver(transfer) == RiskLevel.MEDIUM
+
+
+def test_successful_transfer_marks_receiver_known(
+    client: Client,
+    tmp_path,
+) -> None:
+    receiver_owner = _make_client("receiver-2")
+    sender = BankAccount(client, Currency.RUB)
+    receiver = BankAccount(receiver_owner, Currency.RUB)
+    sender.deposit(1000)
+
+    risk_analyzer = RiskAnalyzer()
+    processor = TransactionProcessor(
+        risk_analyzer=risk_analyzer,
+        audit_log=AuditLog(str(tmp_path / "audit.log")),
+    )
+
+    transfer = _make_transfer(sender, receiver)
+    processor.process(transfer)
+
+    # After a successful transfer the receiver is known, so risk drops to LOW.
+    assert transfer.status == TransactionStatus.COMPLETED
+    assert risk_analyzer.analyze_new_receiver(transfer) == RiskLevel.LOW
